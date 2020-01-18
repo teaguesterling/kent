@@ -84,7 +84,7 @@ if (gf != NULL)
     }
 }
 
-int gfPowerOf20(int n)
+static int gfPowerOf20(int n)
 /* Return a 20 to the n */
 {
 int res = 20;
@@ -245,7 +245,7 @@ for (i=0; i<=lastTile; i += stepSize)
     }
 }
 
-static int gfCountTilesInNib(struct genoFind *gf, int stepSize, char *fileName)
+static long long gfCountTilesInNib(struct genoFind *gf, int stepSize, char *fileName)
 /* Count all tiles in nib file.  Returns nib size. */
 {
 FILE *f;
@@ -270,7 +270,7 @@ fclose(f);
 return nibSize;
 }
 
-long long maxTotalBases()
+static long long maxTotalBases()
 /* Return maximum bases we can index. */
 {
 long long maxBases = 1024*1024;
@@ -322,9 +322,8 @@ int count = 0;
 int i;
 gfOffset *listSizes = gf->listSizes;
 gfOffset **lists = gf->lists;
-void *allocated = NULL;
+gfOffset *allocated = NULL;
 gfOffset maxPat = gf->maxPat;
-int size;
 int usedCount = 0, overusedCount = 0;
 int tileSpaceSize = gf->tileSpaceSize;
 
@@ -342,13 +341,13 @@ for (i=0; i<tileSpaceSize; ++i)
         }
     }
 if (count > 0)
-    gf->allocated = allocated = needHugeMem(count*sizeof(allocated[0]));
+    gf->allocated = allocated = needHugeMem(count*sizeof(gfOffset));
 for (i=0; i<tileSpaceSize; ++i)
     {
-    if ((size = listSizes[i]) < maxPat)
+    if (listSizes[i] < maxPat)
         {
         lists[i] = allocated;
-        allocated += size;
+        allocated += listSizes[i];
         }
     }
 return count;
@@ -362,8 +361,7 @@ int count = 0;
 int i;
 gfOffset *listSizes = gf->listSizes;
 struct endList **endLists = gf->endLists;
-void *allocated = NULL;
-int size;
+struct endList *allocated = NULL;
 int tileSpaceSize = gf->tileSpaceSize;
 
 for (i=0; i<tileSpaceSize; ++i)
@@ -372,9 +370,8 @@ if (count > 0)
     gf->allocated = allocated = needHugeMem(count * sizeof(struct endList));
 for (i=0; i<tileSpaceSize; ++i)
     {
-    size = listSizes[i];
     endLists[i] = allocated;
-    allocated += size;
+    allocated += sizeof(struct endList) * listSizes[i];
     }
 return count;
 }
@@ -396,12 +393,16 @@ gfOffset **lists = gf->lists;
 initNtLookup();
 for (i=0; i<=lastTile; i += stepSize)
     {
+    assert(lists[0][0] < 100000000);  // FIXME: tmp
     tile = makeTile(poly, tileSize);
+    assert(lists[0][0] < 100000000);  // FIXME: tmp
     if (tile >= 0)
         {
 	if (listSizes[tile] < maxPat)
 	    {
+            assert(lists[0][0] < 100000000);  // FIXME: tmp
 	    lists[tile][listSizes[tile]++] = offset;
+            assert(lists[0][0] < 100000000);  // FIXME: tmp
 	    }
 	}
     offset += stepSize;
