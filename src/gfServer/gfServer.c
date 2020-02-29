@@ -164,7 +164,7 @@ if (doTrans)
     errAbort("Don't support translated direct stuff currently, sorry");
 
 gf = gfIndexNibsAndTwoBits(fileCount, seqFiles, minMatch, maxGap, 
-	tileSize, repMatch, FALSE,
+	tileSize, repMatch, NULL,
 	allowOneMismatch, stepSize);
 
 while (faSpeedReadNext(lf, &seq.dna, &seq.size, &seq.name))
@@ -196,7 +196,7 @@ time_t startTime, endTime;
 
 startTime = clock1000();
 gf = gfIndexNibsAndTwoBits(fileCount, seqFiles, minMatch, maxGap, 
-	tileSize, repMatch, FALSE,
+	tileSize, repMatch, NULL,
 	allowOneMismatch, stepSize);
 endTime = clock1000();
 printf("Index built in %4.3f seconds\n", 0.001 * (endTime - startTime));
